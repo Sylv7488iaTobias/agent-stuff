@@ -8,6 +8,9 @@
   },
   "readme": "README.md",
   "type": "module",
+  "scripts": {
+    "test": "node --experimental-strip-types --test tests/*.test.ts"
+  },
   "keywords": [
     "pi-package",
     "pi-extension",
