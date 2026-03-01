@@ -285,8 +285,18 @@ async function gatherPrDiff(
 // Shared commit flow
 // ---------------------------------------------------------------------------
 
+/** Options for the commit flow. */
+interface CommitOptions {
+	/** When true, auto-create a side branch without prompting the user. */
+	autoBranch?: boolean;
+}
+
 /**
- * The full stage → generate → branch → commit flow shared by both commands.
+ * The full stage → generate → branch → commit flow shared by all commands.
+ *
+ * When `options.autoBranch` is true and we're on the default branch, the
+ * AI-generated branch name is used without prompting. Otherwise the user
+ * is asked to confirm or provide a branch name.
  *
  * Returns the commit message on success, or `null` if the flow was
  * cancelled or failed (notifications are already shown).
@@ -294,6 +304,7 @@ async function gatherPrDiff(
 async function performCommit(
 	pi: ExtensionAPI,
 	ctx: ExtensionCommandContext,
+	options: CommitOptions = {},
 ): Promise<{ commitMessage: string; defaultBranch: string } | null> {
 	const currentBranch = await getCurrentBranch(pi);
 	const defaultBranch = await getDefaultBranch(pi);
@@ -329,7 +340,8 @@ async function performCommit(
 	if (onDefaultBranch) {
 		const suggestion = proposedBranch ?? "feature/auto-branch";
 
-		if (!ctx.hasUI) {
+		if (options.autoBranch || !ctx.hasUI) {
+			// Auto-create the branch without prompting
 			const { code, stderr } = await pi.exec("git", ["checkout", "-b", suggestion]);
 			if (code !== 0) {
 				ctx.ui.notify(`Failed to create branch: ${stderr}`, "error");
@@ -538,11 +550,11 @@ export default function commitExtension(pi: ExtensionAPI) {
 
 	pi.registerCommand("commit-push", {
 		description:
-			"Update changelog, stage, commit, and push. Generates commit message and branch name via AI.",
+			"Update changelog, stage, commit, and push. Generates commit message and branch name via AI. Auto-creates a side branch when on the default branch.",
 		handler: async (_args, ctx) => {
 			if (!(await checkPrerequisites(pi, ctx))) return;
 			await performChangelog(pi, ctx);
-			const result = await performCommit(pi, ctx);
+			const result = await performCommit(pi, ctx, { autoBranch: true });
 			if (!result) return;
 			await performPush(pi, ctx);
 		},
@@ -550,7 +562,7 @@ export default function commitExtension(pi: ExtensionAPI) {
 
 	pi.registerCommand("commit-push-pr", {
 		description:
-			"Update changelog, stage, commit, push, and create/update a PR — all in one step. Generates commit message, branch name, PR title, and description via AI.",
+			"Update changelog, stage, commit, push, and create/update a PR — all in one step. Generates commit message, branch name, PR title, and description via AI. Auto-creates a side branch when on the default branch.",
 		handler: async (_args, ctx) => {
 			if (!(await checkPrerequisites(pi, ctx))) return;
 
@@ -561,7 +573,7 @@ export default function commitExtension(pi: ExtensionAPI) {
 			}
 
 			await performChangelog(pi, ctx);
-			const result = await performCommit(pi, ctx);
+			const result = await performCommit(pi, ctx, { autoBranch: true });
 			if (!result) return;
 			if (!(await performPush(pi, ctx))) return;
 			await performPr(pi, ctx, result.defaultBranch);
