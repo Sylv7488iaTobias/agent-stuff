@@ -176,7 +176,7 @@ export default function planExtension(pi: ExtensionAPI) {
 		if (planActive) {
 			ctx.ui.setStatus("plan-mode", ctx.ui.theme.fg("warning", "📋 plan"));
 		} else {
-			ctx.ui.setStatus("plan-mode", undefined);
+			ctx.ui.setStatus("plan-mode", ctx.ui.theme.fg("success", "🤖 agent"));
 		}
 	}
 
@@ -227,6 +227,29 @@ export default function planExtension(pi: ExtensionAPI) {
 
 			// Send the planning prompt as a user message to kick off the agent
 			pi.sendUserMessage(buildPlanPrompt(prompt));
+		},
+	});
+
+	// ── Ctrl+Tab shortcut to toggle modes ────────────────────────────────
+
+	pi.registerShortcut("ctrl+tab", {
+		description: "Toggle between agent and plan mode",
+		handler: async (ctx) => {
+			if (planActive) {
+				// Switch back to agent mode immediately
+				exitPlanMode(ctx);
+				ctx.ui.notify("Switched to agent mode.", "info");
+				return;
+			}
+
+			// Entering plan mode — ask for a prompt
+			const prompt = await ctx.ui.input("What do you want to plan?", "");
+			if (!prompt?.trim()) return;
+
+			planPrompt = prompt.trim();
+			enterPlanMode(ctx);
+			ctx.ui.notify("Entered plan mode (read-only). Planning...", "info");
+			pi.sendUserMessage(buildPlanPrompt(planPrompt));
 		},
 	});
 
