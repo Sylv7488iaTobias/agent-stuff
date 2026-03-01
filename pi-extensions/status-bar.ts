@@ -194,10 +194,17 @@ export default function (pi: ExtensionAPI) {
 						theme.fg("warning", `$${cost.toFixed(4)}`) +
 						theme.fg("dim", " ");
 
+					// Extension statuses (e.g. sandbox indicator)
+					const statuses = footerData.getExtensionStatuses();
+					let l1Mid = "";
+					if (statuses.size > 0) {
+						l1Mid = " " + [...statuses.values()].join(theme.fg("dim", " · "));
+					}
+
 					const pad1 = " ".repeat(
-						Math.max(1, width - visibleWidth(l1Left) - visibleWidth(l1Right)),
+						Math.max(1, width - visibleWidth(l1Left) - visibleWidth(l1Mid) - visibleWidth(l1Right)),
 					);
-					const line1 = truncateToWidth(l1Left + pad1 + l1Right, width, "");
+					const line1 = truncateToWidth(l1Left + l1Mid + pad1 + l1Right, width, "");
 
 					// --- Line 2: cwd + git info (left), tool tally + turn (right) ---
 					const dir = basename(ctx.cwd);

@@ -303,6 +303,7 @@ export default function planExtension(pi: ExtensionAPI) {
 
 		// Ask what to do next
 		const action = await ctx.ui.select("Plan complete — what would you like to do?", [
+			"Create tickets with /kt-create",
 			"Save plan to file",
 			"Save plan and execute it",
 			"Continue refining (stay in plan mode)",
@@ -312,6 +313,12 @@ export default function planExtension(pi: ExtensionAPI) {
 		if (!action || action === "Discard and exit plan mode") {
 			exitPlanMode(ctx);
 			ctx.ui.notify("Plan mode exited.", "info");
+			return;
+		}
+
+		if (action === "Create tickets with /kt-create") {
+			exitPlanMode(ctx);
+			ctx.ui.runCommand("kt-create");
 			return;
 		}
 

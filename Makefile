@@ -1,4 +1,7 @@
-.PHONY: release changelog
+.PHONY: test release changelog
+
+test:
+	npm test
 
 VERSION ?=
 

@@ -45,6 +45,7 @@ All extensions live in [`pi-extensions/`](pi-extensions). Each file is a self-co
 | [`status-bar.ts`](pi-extensions/status-bar.ts) | Rich two-line footer with model, context meter, token counts, cost, git status, and tool tally |
 | [`todos.ts`](pi-extensions/todos.ts) | File-backed todo manager with a TUI for listing and editing todos |
 | [`whimsical.ts`](pi-extensions/whimsical.ts) | Replaces "Thinking..." with random phrases like "Reticulating splines..." and "Consulting the void..." |
+| [`commit.ts`](pi-extensions/commit.ts) | `/commit` command — stages all changes, generates a Conventional Commits message via LLM, creates a side branch if on the default branch |
 
 ## Skills
 
@@ -52,7 +53,6 @@ Skills live in [`skills/`](skills). Each skill has a `SKILL.md` that the agent r
 
 | Skill | Description |
 |-------|-------------|
-| [`commit`](skills/commit) | Git commits using Conventional Commits style |
 | [`github`](skills/github) | GitHub interactions via the `gh` CLI (issues, PRs, runs, API) |
 | [`go-code-simplifier`](skills/go-code-simplifier) | Simplify and refine Go code for clarity and maintainability (Go 1.26+) |
 | [`js-code-simplifier`](skills/js-code-simplifier) | Simplify and refine JavaScript/TypeScript code for clarity and maintainability |
