@@ -79,14 +79,15 @@ const formatNotification = (text: string | null): { title: string; body: string 
 	return { title: "π", body };
 };
 
-export default function (pi: ExtensionAPI) {
+export default function notifyExtension(pi: ExtensionAPI) {
 	pi.on("agent_end", async (event) => {
 		const lastText = extractLastAssistantText(event.messages ?? []);
 		const { title, body } = formatNotification(lastText);
 		notify(title, body);
 	});
 
-	pi.events.on("waiting_for_input", (data: { question?: string }) => {
-		notify("π", data.question ?? "Waiting for input");
+	pi.events.on("waiting_for_input", (data: unknown) => {
+		const input = data as { question?: string } | undefined;
+		notify("π", input?.question ?? "Waiting for input");
 	});
 }

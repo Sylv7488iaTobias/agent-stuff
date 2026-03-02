@@ -1,4 +1,18 @@
-import type { ExtensionAPI, ExtensionContext, ModelSelectEvent, ThinkingLevel } from "@mariozechner/pi-coding-agent";
+/**
+ * Prompt Editor Extension
+ *
+ * Replaces the built-in editor with a custom prompt editor that supports:
+ * - Named modes (default, fast, custom…) persisted in modes.json
+ * - Mode cycling via Ctrl+Space and selection via Ctrl+Shift+M / /mode
+ * - Thinking-level border color derived from mode or model config
+ * - Prompt history loaded from current and previous sessions
+ *
+ * Modes are stored globally (~/.pi/agent/modes.json) or per-project (.pi/modes.json).
+ * Multiple running pi sessions use file-locking to avoid clobbering each other.
+ */
+
+import type { ThinkingLevel } from "@mariozechner/pi-agent-core";
+import type { ExtensionAPI, ExtensionContext } from "@mariozechner/pi-coding-agent";
 import { CustomEditor, ModelSelectorComponent, SettingsManager } from "@mariozechner/pi-coding-agent";
 import path from "node:path";
 import os from "node:os";
@@ -1211,12 +1225,13 @@ export default function (pi: ExtensionAPI) {
 			if (tokens[0] === "store") {
 				await ensureRuntime(pi, ctx);
 
-				let target = tokens[1];
+				let target: string | undefined = tokens[1];
 				if (!target) {
 					if (!ctx.hasUI) return;
 					const names = orderedModeNames(runtime.data.modes);
-					target = await ctx.ui.select("Store current selection into mode", names);
-					if (!target) return;
+					const selected = await ctx.ui.select("Store current selection into mode", names);
+					if (!selected) return;
+					target = selected;
 				}
 
 				if (target === CUSTOM_MODE_NAME) {
@@ -1285,7 +1300,7 @@ export default function (pi: ExtensionAPI) {
 	});
 
 
-	pi.on("model_select", async (event: ModelSelectEvent, ctx) => {
+	pi.on("model_select", async (event, ctx) => {
 		// Always track the last observed model for overlay/store correctness.
 		lastObservedModel = { provider: event.model.provider, modelId: event.model.id };
 

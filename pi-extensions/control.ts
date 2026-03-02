@@ -472,7 +472,8 @@ function getMessagesSinceLastPrompt(ctx: ExtensionContext): ExtractedMessage[] {
 		if (entry.type === "message") {
 			const msg = entry.message;
 			if ("role" in msg && (msg.role === "user" || msg.role === "assistant")) {
-				const textParts = msg.content
+				const content = msg.content;
+				const textParts = (Array.isArray(content) ? content : [])
 					.filter((c): c is { type: "text"; text: string } => c.type === "text")
 					.map((c) => c.text);
 				if (textParts.length > 0) {
@@ -764,7 +765,8 @@ async function handleCommand(
 		return;
 	}
 
-	respond(false, command.type, undefined, `Unsupported command: ${command.type}`);
+	const commandType = (command as { type: string }).type;
+	respond(false, commandType, undefined, `Unsupported command: ${commandType}`);
 }
 
 // ============================================================================
@@ -868,12 +870,12 @@ async function sendRpcCommand(
 					// Handle response
 					if (msg.type === "response") {
 						if (msg.command === command.type) {
-							response = msg;
+							response = msg as RpcResponse;
 							// If not waiting for event, we're done
 							if (!waitForEvent) {
 								cleanup();
 								socket.end();
-								resolve({ response });
+								resolve({ response: msg as RpcResponse });
 								return;
 							}
 						}
@@ -1403,11 +1405,12 @@ Messages automatically include sender session info for replies. When you want a 
 
 		renderResult(result, { expanded }, theme) {
 			const details = result.details as Record<string, unknown> | undefined;
-			const isError = result.isError === true;
+			const isError = (result as unknown as Record<string, unknown>).isError === true;
 
 			// Error case
 			if (isError || details?.error) {
-				const errorMsg = (details?.error as string) || result.content[0]?.type === "text" ? (result.content[0] as { type: "text"; text: string }).text : "Unknown error";
+				const errorMsg = (details?.error as string)
+					?? (result.content[0]?.type === "text" ? (result.content[0] as { type: "text"; text: string }).text : "Unknown error");
 				return new Text(theme.fg("error", "✗ ") + theme.fg("error", errorMsg), 0, 0);
 			}
 
