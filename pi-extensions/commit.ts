@@ -183,6 +183,21 @@ async function hasChanges(pi: ExtensionAPI): Promise<boolean> {
 	return code === 0 && stdout.trim().length > 0;
 }
 
+/** Check whether there are commits ahead of the remote tracking branch. */
+async function hasUnpushedCommits(pi: ExtensionAPI): Promise<boolean> {
+	const { stdout, code } = await pi.exec("git", [
+		"rev-list", "--count", "@{upstream}..HEAD",
+	]);
+	if (code === 0) {
+		return parseInt(stdout.trim(), 10) > 0;
+	}
+	// No upstream set — if we have any commits, they're unpushed
+	const { stdout: logOut, code: logCode } = await pi.exec("git", [
+		"rev-list", "--count", "HEAD",
+	]);
+	return logCode === 0 && parseInt(logOut.trim(), 10) > 0;
+}
+
 /** Gather staged + unstaged diff and untracked file names. */
 async function gatherDiffContent(pi: ExtensionAPI): Promise<string> {
 	const { stdout: diff } = await pi.exec("git", ["diff", "HEAD"]);
@@ -405,16 +420,15 @@ async function performCommit(
 /**
  * Validate git repo and haiku model availability.
  *
+ * Does NOT check for uncommitted changes — callers that need that
+ * should check `hasChanges()` separately.
+ *
  * Returns `false` (with notifications) if any check fails.
  */
 async function checkPrerequisites(pi: ExtensionAPI, ctx: ExtensionCommandContext): Promise<boolean> {
 	const { code: gitCheck } = await pi.exec("git", ["rev-parse", "--git-dir"]);
 	if (gitCheck !== 0) {
 		ctx.ui.notify("Not a git repository", "error");
-		return false;
-	}
-	if (!(await hasChanges(pi))) {
-		ctx.ui.notify("No changes to commit", "info");
 		return false;
 	}
 	if (!HAIKU) {
@@ -700,25 +714,38 @@ export default function commitExtension(pi: ExtensionAPI) {
 			"Stage all changes and commit with an AI-generated Conventional Commits message. Creates a side branch if on the default branch.",
 		handler: async (_args, ctx) => {
 			if (!(await checkPrerequisites(pi, ctx))) return;
+			if (!(await hasChanges(pi))) {
+				ctx.ui.notify("No changes to commit", "info");
+				return;
+			}
 			await performCommit(pi, ctx);
 		},
 	});
 
 	pi.registerCommand("commit-push", {
 		description:
-			"Update changelog, stage, commit, and push. Generates commit message and branch name via AI. Auto-creates a side branch when on the default branch.",
+			"Update changelog, stage, commit, and push. Commits if there are changes, pushes if there are unpushed commits. Auto-creates a side branch when on the default branch.",
 		handler: async (_args, ctx) => {
 			if (!(await checkPrerequisites(pi, ctx))) return;
-			await performChangelog(pi, ctx);
-			const result = await performCommit(pi, ctx, { autoBranch: true });
-			if (!result) return;
-			await performPush(pi, ctx);
+
+			const changes = await hasChanges(pi);
+			if (changes) {
+				await performChangelog(pi, ctx);
+				const result = await performCommit(pi, ctx, { autoBranch: true });
+				if (!result) return;
+			}
+
+			if (changes || (await hasUnpushedCommits(pi))) {
+				await performPush(pi, ctx);
+			} else {
+				ctx.ui.notify("Nothing to commit or push", "info");
+			}
 		},
 	});
 
 	pi.registerCommand("commit-push-pr", {
 		description:
-			"Update changelog, stage, commit, push, and create/update a PR — all in one step. Generates commit message, branch name, PR title, and description via AI. Auto-creates a side branch when on the default branch.",
+			"Update changelog, stage, commit, push, and create/update a PR — all in one step. Commits if there are changes, always pushes and updates the PR. Auto-creates a side branch when on the default branch.",
 		handler: async (_args, ctx) => {
 			if (!(await checkPrerequisites(pi, ctx))) return;
 
@@ -728,11 +755,20 @@ export default function commitExtension(pi: ExtensionAPI) {
 				return;
 			}
 
-			await performChangelog(pi, ctx);
-			const result = await performCommit(pi, ctx, { autoBranch: true });
-			if (!result) return;
-			if (!(await performPush(pi, ctx))) return;
-			await performPr(pi, ctx, result.defaultBranch);
+			const changes = await hasChanges(pi);
+			if (changes) {
+				await performChangelog(pi, ctx);
+				const result = await performCommit(pi, ctx, { autoBranch: true });
+				if (!result) return;
+			}
+
+			const defaultBranch = await getDefaultBranch(pi);
+
+			if (changes || (await hasUnpushedCommits(pi))) {
+				if (!(await performPush(pi, ctx))) return;
+			}
+
+			await performPr(pi, ctx, defaultBranch);
 		},
 	});
 }
