@@ -607,15 +607,22 @@ export default function ticketExtension(pi: ExtensionAPI) {
 	function refreshUI(ctx: ExtensionContext): void {
 		const dir = getTicketsDir(ctx.cwd);
 		const tickets = listTicketsSync(dir);
-		const inProgress = tickets.filter((t) => t.status === "in_progress");
-		const remaining = tickets.filter((t) => t.status !== "closed").length;
 
-		// Status
-		if (!tickets.length) {
-			ctx.ui.setStatus("🎫 no tickets", "ticket");
-		} else {
-			ctx.ui.setStatus(`🎫 ${tickets.length} tickets (${remaining} remaining)`, "ticket");
+		// Single-pass counting for ticket stats
+		const stats = { epics: 0, tasks: 0, bugs: 0, features: 0, open: 0, inProgress: 0, closed: 0 };
+		for (const t of tickets) {
+			if (t.type === "epic") stats.epics++;
+			else if (t.type === "task") stats.tasks++;
+			else if (t.type === "bug") stats.bugs++;
+			else if (t.type === "feature") stats.features++;
+			if (t.status === "open") stats.open++;
+			else if (t.status === "in_progress") stats.inProgress++;
+			else if (t.status === "closed") stats.closed++;
 		}
+
+		pi.events.emit("ticket:stats", { total: tickets.length, ...stats });
+
+		const inProgress = tickets.filter((t) => t.status === "in_progress");
 
 		// Widget: current in-progress ticket
 		if (inProgress.length) {
@@ -1167,7 +1174,10 @@ export default function ticketExtension(pi: ExtensionAPI) {
 				"**Step 3: Create** — Once I approve the plan, create the tickets:\n" +
 				"1. `ticket create` the epic (type=epic) with description and acceptance criteria\n" +
 				"2. `ticket create` each task (type=task, parent=<epic-id>) with:\n" +
-				"   - description: what to implement\n" +
+				"   - description: **self-contained** — include enough project context, design decisions, " +
+				"and relevant details from the planning discussion so an agent can work on this ticket " +
+				"in an isolated session without access to the original conversation. " +
+				"Reference specific files, APIs, data structures, and conventions by name.\n" +
 				"   - acceptance: definition of done\n" +
 				"   - tests: specific test criteria that must pass before closing\n" +
 				"   - priority and deps as planned\n" +
@@ -1234,20 +1244,15 @@ export default function ticketExtension(pi: ExtensionAPI) {
 				`Steps:\n1. \`ticket start ${firstTicket.id}\`\n2. Implement the work\n3. \`ticket close ${firstTicket.id}\`${record.tests ? " (with tests_confirmed=true after verifying tests)" : ""}\n\n` +
 				`After closing, there are ${ready.length - 1} more tickets to process.`;
 
-			// For fork-each, create a new session with the prompt
+			// Fork a new session, then send the prompt to trigger execution
 			const result = await ctx.newSession({
 				parentSession: ctx.sessionManager.getSessionFile(),
-				setup: async (sm) => {
-					sm.appendMessage({
-						role: "user",
-						content: [{ type: "text", text: prompt }],
-						timestamp: Date.now(),
-					});
-				},
 			});
 
 			if (result.cancelled) {
 				ctx.ui.notify("Session creation cancelled", "info");
+			} else {
+				pi.sendUserMessage(prompt);
 			}
 		},
 	});
