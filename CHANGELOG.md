@@ -26,9 +26,17 @@ All notable changes to agent-stuff are documented here.
 
 
 
-## feat/session-namer-extension
+
+
+## fix/session-namer-resume-restore
+
+Session Namer now correctly restores session state when resuming a previous session (#15), preventing redundant Haiku calls that would overwrite existing names — the extension retrieves `baseName`, mode emoji, and `userTurnCount` from persisted session data on `session_switch`. Additionally, the extension strips XML-style tags (e.g., `<skill>`, `<available_skills>`) from conversation context before sending to Haiku, preventing polluted or malformed session names generated from skill expansions. These fixes ensure naming remains deterministic and clean across session lifecycle transitions.
+
+## [1.0.3](https://github.com/kostyay/agent-stuff/pull/14) - 2026-03-02
 
 Introduces the Session Namer extension (#14), which automatically generates concise, descriptive session names using Claude Haiku after the first agent response. The extension appends a mode emoji (📋 for plan, 🧠 for ask) based on the most recent non-agent interaction mode, and regenerates names on session compaction or via the new `/session-name-refresh` command. All AI calls execute asynchronously in the background to prevent blocking the agent loop, with silent error handling to ensure naming remains best-effort and non-disruptive.
+
+Fixed session state not being restored on resume: when switching to a resumed session via `session_switch`, the extension now restores `baseName`, mode emoji, and `userTurnCount` from the persisted session — preventing a redundant Haiku call that would overwrite the existing name. Also strips XML-style tags (e.g. `<skill>`, `<available_skills>`) from conversation context before sending to Haiku, avoiding polluted session names from skill expansions.
 
 ## [1.0.2](https://github.com/kostyay/agent-stuff/pull/13) - 2026-03-02
 
