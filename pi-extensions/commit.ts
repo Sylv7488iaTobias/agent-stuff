@@ -592,12 +592,15 @@ async function performPr(
 	ctx: ExtensionCommandContext,
 	defaultBranch: string,
 ): Promise<PrInfo | null> {
+	const branch = await getCurrentBranch(pi);
 	let pr = await getExistingPr(pi);
 	if (!pr) {
 		ctx.ui.notify("Creating PR…", "info");
-		const { code, stderr } = await pi.exec("gh", [
-			"pr", "create", "--title", "WIP", "--body", "",
-		]);
+		const createArgs = ["pr", "create", "--title", "WIP", "--body", ""];
+		if (branch) {
+			createArgs.push("--head", branch);
+		}
+		const { code, stderr } = await pi.exec("gh", createArgs);
 		if (code !== 0) {
 			ctx.ui.notify(`Failed to create PR: ${stderr}`, "error");
 			return null;
@@ -1016,9 +1019,11 @@ export default function commitExtension(pi: ExtensionAPI) {
 
 			const defaultBranch = await getDefaultBranch(pi);
 
-			if (changes || (await hasUnpushedCommits(pi))) {
-				if (!(await performPush(pi, ctx))) return;
-			}
+			// Always push before PR creation to ensure the remote branch exists.
+			// Handles stale upstream refs (e.g. remote branch deleted after a
+			// previous PR merge) where hasUnpushedCommits() incorrectly returns
+			// false. The push is idempotent — a no-op when already up-to-date.
+			if (!(await performPush(pi, ctx))) return;
 
 			await performPr(pi, ctx, defaultBranch);
 		},
