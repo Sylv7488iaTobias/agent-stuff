@@ -105,11 +105,19 @@ All notable changes to agent-stuff are documented here.
 
 
 
-## feat/swift-simplifier-skill
+
+
+
+
+## docs/stash-slash-command-docs
+
+Documentation updates reflect the migration of the stash extension from keyboard shortcut (Ctrl+Shift+S) to slash command (`/stash`) for improved discoverability and consistency with other Pi extensions (#73). Additionally, a refactoring in `prompt-editor.ts` captures the theme reference at initialization time to prevent invalidation errors that could occur during render callbacks when the ExtensionContext becomes stale after session replacement or shutdown—the fix includes defensive try/catch handling in the border color renderer to gracefully degrade to uncolored text if the context is invalidated mid-render.
+
+## [1.0.44](https://github.com/kostyay/agent-stuff/pull/70) - 2026-04-16
 
 Adds Swift language support to the code simplifier with a comprehensive new skill (#70). The `swift-code-simplifier` skill provides detailed refinement patterns and best practices for simplifying Swift code while preserving functionality, targeting Swift 6+ and following Apple's API Design Guidelines. Coverage includes modern idioms like async/await, actors, guard statements, optionals handling, protocol-oriented design, and access control principles. File extension detection now recognizes `.swift` files for automatic language routing.
 
-## refactor/auto-run-simplification
+## [1.0.44](https://github.com/kostyay/agent-stuff/pull/69) - 2026-04-16
 
 Simplified the `/ticket-run-all` auto-run flow to streamline ticket processing across epics (#69). The command now uses a single confirmation dialog instead of fork-strategy selection, automatically initiates context compaction via `ctx.compact()`, and removes the separate session creation logic—auto-run state is tracked in-memory for seamless continuation. Added comprehensive test coverage for cross-epic task dependencies, including `buildAutoRunPrompt()` and `buildEpicContextLine()` helpers that enable proper context switching when moving between epic scopes. The refactored flow maintains the core auto-run capability (context compaction between tasks, continuation via `agent_end`) while reducing cognitive overhead and improving agent readiness for multi-epic workflows.
 
