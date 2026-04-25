@@ -4,12 +4,13 @@ test:
 	npm test
 
 VERSION ?=
+# Default to patch bumps; set VERSION=x.y.z to override
 
 release: changelog
 	@git fetch --tags origin && \
 	if [ -n "$(VERSION)" ]; then TAG=v$(VERSION); \
 	else LATEST=$$(git tag -l 'v*' --sort=-v:refname | head -1); \
-	  if [ -z "$$LATEST" ]; then TAG=v1.0.0; \
+	  if [ -z "$$LATEST" ]; then TAG=v0.1.0; \
 	  else V=$${LATEST#v}; P=$${V##*.}; TAG=v$${V%.*}.$$((P+1)); fi; \
 	fi && \
 	NEW_VERSION=$${TAG#v} && \
