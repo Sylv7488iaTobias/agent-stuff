@@ -38,6 +38,8 @@ Apply the `@skills/js-code-simplifier/` skill to **every** code change in this r
 
 > **Personal note:** I'm also enforcing a max line length of 100 characters for readability in my editor setup.
 
+> **Personal note:** I prefer `const` over `let` wherever possible — if a variable is never reassigned, it should be `const`. Flag any `let` that could be `const` during review.
+
 ---
 
 ## Extension Design Rules
@@ -68,4 +70,4 @@ Each extension registers its own tools/commands. If two extensions need the same
 
 ### Cross-Extension Communication via `pi.events`
 
-Extensions communicate at runtime through the shared event bus (`pi.events`), never through imports. Data-producing extensions emit typed events; consuming ex
+Extensions communicate at runtime through the
