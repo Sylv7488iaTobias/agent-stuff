@@ -40,6 +40,8 @@ Apply the `@skills/js-code-simplifier/` skill to **every** code change in this r
 
 > **Personal note:** I prefer `const` over `let` wherever possible — if a variable is never reassigned, it should be `const`. Flag any `let` that could be `const` during review.
 
+> **Personal note:** Prefer `interface` over `type` aliases for object shapes — easier to extend later and clearer intent.
+
 ---
 
 ## Extension Design Rules
@@ -66,8 +68,4 @@ import { askQuestion } from "./kbrainstorm"; // ❌ Cross-extension import
 ```
 
 **Right:**
-Each extension registers its own tools/commands. If two extensions need the same capability, extract it into a shared utility in a `lib/` directory, or better yet, make each extension independently register what it needs.
-
-### Cross-Extension Communication via `pi.events`
-
-Extensions communicate at runtime through the
+Each extension registers its own tools/commands. If two extensions need the same capability, extract it into a shared utility in a `lib/` di
