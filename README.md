@@ -36,6 +36,6 @@ All extensions live in [`pi-extensions/`](pi-extensions). Each file is a self-co
 | [`claude-import.ts`](pi-extensions/claude-import.ts) | Loads commands, skills, and agents from `.claude/` directories (project + global) and registers them as `/claude:*` commands |
 | [`kbrainstorm.ts`](pi-extensions/kbrainstorm.ts) | `ask_question` tool — interactive TUI for brainstorming with multiple-choice and freeform answers |
 | [`ticket/`](pi-extensions/ticket) | `ticket` tool — git-backed ticket tracker storing tickets as markdown files in `.tickets/` with hierarchy, dependencies, status workflow, auto-closing of completed epics, and auto-run continuation across epics with context compaction |
-| [`loop.ts`](pi-extensions/loop.ts) | `/loop` command — runs a follow-up prompt in a loop until stopped |
+| [`loop.ts`](pi-extensions/loop.ts) | `/loop` command — runs a follow-up prompt in a loop until the agent signals completion |
 
-> **Personal note:** I mostly use `bgrun`, `commit`, and `ticket` day-to-day. The `claude-import.ts` extension is handy if you're migrating from Claude Code and want to reuse existing slash commands.
+> **Personal note:** I primarily use `bgrun.ts`, `commit.ts`, and `ticket/` in my day-to-day workflow. The `claude-import.ts` extension is handy if you're migrating from Claude Code and want to reuse existing slash commands.
