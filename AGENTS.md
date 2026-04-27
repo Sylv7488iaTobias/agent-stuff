@@ -44,6 +44,8 @@ Apply the `@skills/js-code-simplifier/` skill to **every** code change in this r
 
 > **Personal note:** Prefer `===` over `==` for all equality checks — no implicit coercion. Flag any loose equality during review.
 
+> **Personal note:** Prefer named exports over default exports — makes refactoring and searching easier, and avoids inconsistent import naming across files.
+
 ---
 
 ## Extension Design Rules
@@ -64,10 +66,4 @@ If an extension grows beyond ~400 lines, split it. If it does two unrelated thin
 Extensions must **not** import from or depend on other extensions in this repo. Each extension is self-contained at the module level.
 
 **Wrong:**
-```typescript
-// plan-ask.ts
-import { askQuestion } from "./kbrainstorm"; // ❌ Cross-extension import
-```
-
-**Right:**
-Each extension r
+``
