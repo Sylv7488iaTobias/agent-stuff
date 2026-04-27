@@ -8,6 +8,9 @@ VERSION ?=
 # Set BUMP=minor or BUMP=major to override bump type
 BUMP ?= patch
 
+# Default branch name (change to 'master' if needed)
+BRANCH ?= main
+
 release: changelog
 	@git fetch --tags origin && \
 	if [ -n "$(VERSION)" ]; then TAG=v$(VERSION); \
@@ -27,7 +30,7 @@ release: changelog
 	git tag "$$TAG" && \
 	echo "" && \
 	echo "Release $$TAG created. Push with:" && \
-	echo "  git push origin main && git push origin $$TAG"
+	echo "  git push origin $(BRANCH) && git push origin $$TAG"
 
 changelog:
 	pi -p --model anthropic/claude-opus-4-6 "Update the changelog using the kchangelog skill"
