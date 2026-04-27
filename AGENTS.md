@@ -48,6 +48,8 @@ Apply the `@skills/js-code-simplifier/` skill to **every** code change in this r
 
 > **Personal note:** Prefer `readonly` on interface properties that should not be mutated after construction — helps catch accidental reassignment at compile time.
 
+> **Personal note:** Prefer `async`/`await` over raw `.then()`/`.catch()` chains — easier to read, easier to debug with stack traces, and consistent with the rest of the codebase style.
+
 ---
 
 ## Extension Design Rules
@@ -59,8 +61,4 @@ Each `.ts` file in `pi-extensions/` must own exactly **one** concern:
 - A command (e.g., `clear.ts` registers `/clear`)
 - A tool (e.g., a standalone `ask_question` tool)
 - An event handler (e.g., `notify.ts` handles `agent_end`)
-- A UI component (e.g., `status-bar.ts` manages footer status)
-
-If an extension grows beyond ~400 lines, split it. If it does two unrelated things, split it.
-
-### Strict Isolation — No Cross-Extension
+- A UI component (e.g., `status-bar`
