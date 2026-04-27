@@ -42,6 +42,8 @@ Apply the `@skills/js-code-simplifier/` skill to **every** code change in this r
 
 > **Personal note:** Prefer `interface` over `type` aliases for object shapes — easier to extend later and clearer intent.
 
+> **Personal note:** Prefer `===` over `==` for all equality checks — no implicit coercion. Flag any loose equality during review.
+
 ---
 
 ## Extension Design Rules
@@ -68,4 +70,4 @@ import { askQuestion } from "./kbrainstorm"; // ❌ Cross-extension import
 ```
 
 **Right:**
-Each extension registers its own tools/commands. If two extensions need the same capability, extract it into a shared utility in a `lib/` di
+Each extension r
