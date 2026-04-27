@@ -46,6 +46,8 @@ Apply the `@skills/js-code-simplifier/` skill to **every** code change in this r
 
 > **Personal note:** Prefer named exports over default exports — makes refactoring and searching easier, and avoids inconsistent import naming across files.
 
+> **Personal note:** Prefer `readonly` on interface properties that should not be mutated after construction — helps catch accidental reassignment at compile time.
+
 ---
 
 ## Extension Design Rules
@@ -61,9 +63,4 @@ Each `.ts` file in `pi-extensions/` must own exactly **one** concern:
 
 If an extension grows beyond ~400 lines, split it. If it does two unrelated things, split it.
 
-### Strict Isolation — No Cross-Extension Imports
-
-Extensions must **not** import from or depend on other extensions in this repo. Each extension is self-contained at the module level.
-
-**Wrong:**
-``
+### Strict Isolation — No Cross-Extension
