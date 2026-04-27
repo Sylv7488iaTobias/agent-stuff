@@ -38,4 +38,4 @@ All extensions live in [`pi-extensions/`](pi-extensions). Each file is a self-co
 | [`ticket/`](pi-extensions/ticket) | `ticket` tool — git-backed ticket tracker storing tickets as markdown files in `.tickets/` with hierarchy, dependencies, status workflow, auto-closing of completed epics, and auto-run continuation across epics with context compaction |
 | [`loop.ts`](pi-extensions/loop.ts) | `/loop` command — runs a follow-up prompt in a loop until the agent signals completion |
 
-> **Personal note:** I primarily use `bgrun`, `commit`, and `ticket` in my day-to-day workflow. The `cmux` extension is only useful if you're running inside a cmux session — I've disabled it locally.
+> **Personal note:** I primarily use `bgrun.ts`, `commit.ts`, and `ticket/` in my day-to-day workflow. The `cmux.ts` extension requires tmux with the cmux plugin — skip it if you're not using that setup.
