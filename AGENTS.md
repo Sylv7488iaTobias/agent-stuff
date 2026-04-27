@@ -50,14 +50,6 @@ Apply the `@skills/js-code-simplifier/` skill to **every** code change in this r
 
 > **Personal note:** Prefer `async`/`await` over raw `.then()`/`.catch()` chains — easier to read, easier to debug with stack traces, and consistent with the rest of the codebase style.
 
-> **Personal note:** Prefer `unknown` over `any` when the type is genuinely uncertain — forces explicit narrowing before use and catches more errors at compile time.
+> **Personal note:** Prefer `unknown` over `any` when the type is genuinely uncertain — forces explicit narrowing before use and catches more errors.
 
----
-
-## Extension Design Rules
-
-### One Responsibility Per Extension
-
-Each `.ts` file in `pi-extensions/` must own exactly **one** concern:
-
-- A com
+> **Personal note:** Prefer explicit `return` types on all exported functions — even when TypeScript can infer them. Makes the intended contract obvious and surfaces unintended type widening early.
