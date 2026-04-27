@@ -50,6 +50,8 @@ Apply the `@skills/js-code-simplifier/` skill to **every** code change in this r
 
 > **Personal note:** Prefer `async`/`await` over raw `.then()`/`.catch()` chains — easier to read, easier to debug with stack traces, and consistent with the rest of the codebase style.
 
+> **Personal note:** Prefer `unknown` over `any` when the type is genuinely uncertain — forces explicit narrowing before use and catches more errors at compile time.
+
 ---
 
 ## Extension Design Rules
@@ -58,7 +60,4 @@ Apply the `@skills/js-code-simplifier/` skill to **every** code change in this r
 
 Each `.ts` file in `pi-extensions/` must own exactly **one** concern:
 
-- A command (e.g., `clear.ts` registers `/clear`)
-- A tool (e.g., a standalone `ask_question` tool)
-- An event handler (e.g., `notify.ts` handles `agent_end`)
-- A UI component (e.g., `status-bar`
+- A com
