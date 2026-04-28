@@ -32,6 +32,6 @@ release: changelog
 	echo "Release $$TAG created. Push with:" && \
 	echo "  git push origin $(BRANCH) && git push origin $$TAG"
 
-# Using claude-sonnet instead of opus for faster/cheaper changelog generation
+# Using claude-opus-4-5 for higher quality changelog generation
 changelog:
-	pi -p --model anthropic/claude-sonnet-4-5 "Update the changelog using the kchangelog skill"
+	pi -p --model anthropic/claude-opus-4-5 "Update the changelog using the kchangelog skill"
